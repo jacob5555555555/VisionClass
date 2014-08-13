@@ -117,6 +117,3 @@ uint8_t* Picture::data(){
 uint8_t& Picture::get(int x, int y, int channel){
 	return mData[mChannels * (x + mWidth * y) + channel];
 }
-uint8_t& Picture::byte(int index){
-	return mData[index];
-}
