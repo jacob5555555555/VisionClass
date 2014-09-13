@@ -30,6 +30,7 @@ public:
 	void loadJpeg(string fileName);
 	void saveJpeg(const char* fileName, int quality = 100, Colorspace colorSpace = rgb);
 	void saveJpeg(string fileName, int quality = 100,  Colorspace colorSpace = rgb);
+	Window* initWindow();
 };
 
 inline uint8_t& Picture::byte(int index){
