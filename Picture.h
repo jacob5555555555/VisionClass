@@ -1,6 +1,12 @@
 #include <string>
 #include <stdint.h>
 
+#define PICTURE_SDL//TODO fix
+
+#ifdef PICTURE_SDL
+#include "SDL2/SDL.h"
+#endif
+
 using namespace std;
 
 enum Colorspace{
@@ -10,11 +16,16 @@ enum Colorspace{
 };
 
 class Picture{
+	#ifdef PICTURE_SDL
+	struct WindowData;
+	WindowData* mWindowData = NULL;
+	#endif
 	uint8_t* mData;
 	int mHeight;
 	int mWidth;
 	int mChannels;
 	int mTotalBytes;
+
 public:
 	Picture();
 	~Picture();
@@ -30,12 +41,21 @@ public:
 	void loadJpeg(string fileName);
 	void saveJpeg(const char* fileName, int quality = 100, Colorspace colorSpace = rgb);
 	void saveJpeg(string fileName, int quality = 100,  Colorspace colorSpace = rgb);
-	Window* initWindow();
+	void display();
 };
 
 inline uint8_t& Picture::byte(int index){
 	return mData[index];
 }
+
+#ifdef PICTURE_SDL
+struct Picture::WindowData{
+		SDL_Window* mWindow = NULL;
+		SDL_Surface* mSurface = NULL;
+		~WindowData();
+};
+
+#endif
 
 /*
 * NOTE: 1 = greyscale, 2 = rgb. make enum later.

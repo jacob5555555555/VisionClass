@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string>
 #include <cstring>
+#include <iostream>
 
 Picture::Picture(){
 	mData = NULL;
@@ -15,8 +16,10 @@ Picture::Picture(){
 	mTotalBytes = 0;
 }
 Picture::~Picture(){
-	if (mData != NULL)
+	if (mData != NULL)//TODO do I need to check for null?
 		free(mData);
+	if(mWindowData != NULL)	
+		delete mWindowData;
 }
 
 void Picture::loadJpeg(const char* fileName){
@@ -117,3 +120,50 @@ uint8_t* Picture::data(){
 uint8_t& Picture::get(int x, int y, int channel){
 	return mData[mChannels * (x + mWidth * y) + channel];
 }
+
+#ifdef PICTURE_SDL
+
+void Picture::display(){
+	if(mWindowData == NULL){
+		if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){//TODO check if already init
+        	cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << endl;
+        	return;
+    	}else{
+    		mWindowData = new WindowData();
+        	mWindowData->mWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, mWidth, mHeight, SDL_WINDOW_SHOWN );
+        	if( mWindowData->mWindow == NULL )
+        	{
+            	cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << endl;
+            	return;
+        	}
+    	}
+    }
+    //TODO check if size has changed
+    SDL_Event dummy;
+    while(SDL_PollEvent(&dummy));
+    mWindowData->mSurface = SDL_CreateRGBSurfaceFrom(mData, mWidth, mHeight, 24, mWidth*3, 0x0000FF, 0x00FF00, 0xFF0000, 0x000000/*0,0,0,0*/);
+    SDL_BlitSurface(mWindowData->mSurface, NULL, SDL_GetWindowSurface(mWindowData->mWindow), NULL);//TODO: resize
+	SDL_UpdateWindowSurface(mWindowData->mWindow);
+}
+
+Picture::WindowData::~WindowData(){
+	if (mWindow != NULL)
+		SDL_DestroyWindow(mWindow);//TODO do I also have to free?
+	if (mSurface != NULL)
+		SDL_FreeSurface(mSurface);
+	SDL_Quit();
+}
+
+#endif
+/*
+void* convertRGBtoRGBA(uint8_t* data, size_t size){
+	uint8_t* newData = malloc(size*4/3);
+	uint8_t* oldDataPntr = data;
+	uint8_t* newDataPntr = newData;
+	while (oldDataPntr - data != size){
+		for (int i = 0; i < 3; i++){
+			*(newDataPntr++) = *(oldDataPntr++);
+		}
+		*(newDataPntr++) = (uint8_t)0;
+	}
+}*/
