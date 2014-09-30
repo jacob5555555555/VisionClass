@@ -141,6 +141,7 @@ void Picture::display(){
     //TODO check if size has changed
     SDL_Event dummy;
     while(SDL_PollEvent(&dummy));
+    SDL_FreeSurface(mWindowData->mSurface);
     mWindowData->mSurface = SDL_CreateRGBSurfaceFrom(mData, mWidth, mHeight, 24, mWidth*3, 0x0000FF, 0x00FF00, 0xFF0000, 0x000000/*0,0,0,0*/);//this surface could be a local variable and not a member
     int height, width;
     SDL_GetWindowSize(mWindowData->mWindow, &height, &width);
