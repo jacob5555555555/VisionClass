@@ -1,4 +1,4 @@
-#include "Picture.h"
+#include "include/Picture.h"
 #include <stdio.h>
 #include <jpeglib.h>
 #include <stdbool.h>
