@@ -1,4 +1,4 @@
-#include "include/Picture.h"
+#include "../include/Picture.h"
 #include <stdio.h>
 #include <jpeglib.h>
 #include <stdbool.h>
@@ -7,6 +7,14 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <SDL2/SDL.h>
+
+//for the mo'
+struct WindowData{
+		SDL_Window* mWindow = NULL;
+		SDL_Surface* mSurface = NULL;
+		~WindowData();
+};
 
 Picture::Picture(){
 	mData = NULL;
@@ -14,6 +22,7 @@ Picture::Picture(){
 	mWidth = 0;
 	mChannels = 0;
 	mTotalBytes = 0;
+	this->mWindowData = NULL;
 }
 Picture::~Picture(){
 	if (mData != NULL)//TODO do I need to check for null?
@@ -102,27 +111,6 @@ void Picture::newPic(int height, int width, int channels, uint8_t value){
 	memset(mData, value, mTotalBytes);
 }
 
-int Picture::height(){
-	return mHeight;
-}
-int Picture::width(){
-	return mWidth;
-}
-int Picture::channels(){
-	return mChannels;
-}
-int Picture::totalBytes(){
-	return mTotalBytes;
-}
-uint8_t* Picture::data(){
-	return mData;
-}
-uint8_t& Picture::get(int x, int y, int channel){
-	return mData[mChannels * (x + mWidth * y) + channel];
-}
-
-#ifdef PICTURE_SDL
-
 void Picture::display(){
 	if(mWindowData == NULL){
 		if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){//TODO check if already init
@@ -130,7 +118,7 @@ void Picture::display(){
         	return;
     	}else{
     		mWindowData = new WindowData();
-        	mWindowData->mWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, mWidth, mHeight, SDL_WINDOW_SHOWN );
+        	mWindowData->mWindow = SDL_CreateWindow( "<TEAM 1389>", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, mWidth, mHeight, SDL_WINDOW_SHOWN );
         	if( mWindowData->mWindow == NULL )
         	{
             	cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << endl;
@@ -151,24 +139,10 @@ void Picture::display(){
 	SDL_UpdateWindowSurface(mWindowData->mWindow);
 }
 
-Picture::WindowData::~WindowData(){
+WindowData::~WindowData(){
 	if (mWindow != NULL)
 		SDL_DestroyWindow(mWindow);//TODO do I also have to free?
 	if (mSurface != NULL)
 		SDL_FreeSurface(mSurface);
 	SDL_Quit();
 }
-
-#endif
-/*
-void* convertRGBtoRGBA(uint8_t* data, size_t size){
-	uint8_t* newData = malloc(size*4/3);
-	uint8_t* oldDataPntr = data;
-	uint8_t* newDataPntr = newData;
-	while (oldDataPntr - data != size){
-		for (int i = 0; i < 3; i++){
-			*(newDataPntr++) = *(oldDataPntr++);
-		}
-		*(newDataPntr++) = (uint8_t)0;
-	}
-}*/

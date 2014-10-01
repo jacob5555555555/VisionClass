@@ -1,12 +1,6 @@
 #include <string>
 #include <stdint.h>
 
-#define PICTURE_SDL//TODO fix
-
-#ifdef PICTURE_SDL
-#include "SDL2/SDL.h"
-#endif
-
 using namespace std;
 
 enum Colorspace{
@@ -15,11 +9,10 @@ enum Colorspace{
 	unknown = 3//is this right? is unknown 3 in libjpeg?
 };
 
+class WindowData;
+
 class Picture{
-	#ifdef PICTURE_SDL
-	struct WindowData;
-	WindowData* mWindowData = NULL;
-	#endif
+	WindowData* mWindowData;
 	uint8_t* mData;
 	int mHeight;
 	int mWidth;
@@ -48,14 +41,25 @@ inline uint8_t& Picture::byte(int index){
 	return mData[index];
 }
 
-#ifdef PICTURE_SDL
-struct Picture::WindowData{
-		SDL_Window* mWindow = NULL;
-		SDL_Surface* mSurface = NULL;
-		~WindowData();
-};
+inline int Picture::height(){
+	return mHeight;
+}
+inline int Picture::width(){
+	return mWidth;
+}
+inline int Picture::channels(){
+	return mChannels;
+}
+inline int Picture::totalBytes(){
+	return mTotalBytes;
+}
+inline uint8_t* Picture::data(){
+	return mData;
+}
+inline uint8_t& Picture::get(int x, int y, int channel){
+	return mData[mChannels * (x + mWidth * y) + channel];
+}
 
-#endif
 
 /*
 * NOTE: 1 = greyscale, 2 = rgb. make enum later.
