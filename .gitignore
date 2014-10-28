@@ -1,6 +1,5 @@
-*
 
-!examples/
 !.gitignore
-!src/
-!include/
+!src/**
+!include/**
+!examples/**
