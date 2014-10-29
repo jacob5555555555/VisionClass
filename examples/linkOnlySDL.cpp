@@ -1,3 +1,4 @@
+#define PICTURE_USE_SDL
 #include "../include/Picture.h"
 
 int main(){
