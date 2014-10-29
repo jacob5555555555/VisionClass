@@ -1,5 +1,8 @@
+/*
+/*/
 
-!.gitignore
-!src/**
-!include/**
-!examples/**
+!/src/
+!/examples/
+!/include/
+
+*~
