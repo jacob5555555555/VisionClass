@@ -4,5 +4,6 @@
 !/src/
 !/examples/
 !/include/
+!.gitignore
 
 *~
