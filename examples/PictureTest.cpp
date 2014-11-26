@@ -1,3 +1,6 @@
+#define PICTURE_USE_JPEG
+#define PICTURE_USE_SDL
+
 #include <iostream>
 #include <unistd.h>
 #include "../include/Picture.h"
