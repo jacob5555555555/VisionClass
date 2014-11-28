@@ -32,7 +32,7 @@ Picture::~Picture(){
 	if (mData != NULL)//TODO do I need to check for null?
 		free(mData);
 #ifdef PICTURE_USE_SDL
-	if(mWindowData != NULL)	
+	if(mWindowData != NULL)
 		delete mWindowData;
 #endif
 }
@@ -120,24 +120,28 @@ void Picture::newPic(int height, int width, int channels, uint8_t value){
 }
 
 #ifdef PICTURE_USE_SDL
-void Picture::display(){
+bool Picture::display(){
+    bool returnVal = false;
 	if(mWindowData == NULL){
 		if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){//TODO check if already init
         	cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << endl;
-        	return;
+        	return true;
     	}else{
     		mWindowData = new WindowData();
         	mWindowData->mWindow = SDL_CreateWindow( "<TEAM 1389>", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, mWidth, mHeight, SDL_WINDOW_SHOWN );
         	if( mWindowData->mWindow == NULL )
         	{
             	cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << endl;
-            	return;
+            	return true;
         	}
     	}
     }
     //TODO check if size has changed
-    SDL_Event dummy;
-    while(SDL_PollEvent(&dummy));
+    SDL_Event event;
+    while(SDL_PollEvent(&event)){
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE)
+            returnVal = true;
+    }
     SDL_FreeSurface(mWindowData->mSurface);
     mWindowData->mSurface = SDL_CreateRGBSurfaceFrom(mData, mWidth, mHeight, 24, mWidth*3, 0x0000FF, 0x00FF00, 0xFF0000, 0x000000/*0,0,0,0*/);//this surface could be a local variable and not a member
     int height, width;
@@ -146,6 +150,8 @@ void Picture::display(){
     	SDL_SetWindowSize(mWindowData->mWindow, mWidth, mHeight);
     SDL_BlitSurface(mWindowData->mSurface, NULL, SDL_GetWindowSurface(mWindowData->mWindow), NULL);//TODO: resize
 	SDL_UpdateWindowSurface(mWindowData->mWindow);
+
+	return returnVal;
 }
 
 WindowData::~WindowData(){

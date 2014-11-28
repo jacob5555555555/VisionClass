@@ -46,7 +46,7 @@ public:
 	void saveJpeg(string fileName, int quality = 100,  Colorspace colorSpace = rgb);
 #endif
 #ifdef PICTURE_USE_SDL
-	void display();
+	bool display(); //later make this
 #endif
 };
 
