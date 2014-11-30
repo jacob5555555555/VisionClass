@@ -10,8 +10,35 @@
 #include <SDL2/SDL.h>
 
 #ifdef PICTURE_USE_SDL
+class GreyscalePalette{
+    SDL_Palette *mPalette;
+    static GreyscalePalette greyPalette;
+    GreyscalePalette(){
+        mPalette = SDL_AllocPalette(256);
+        SDL_Color *colors = (SDL_Color*)malloc(256 * sizeof(SDL_Color));
+        for(int i = 0; i < 256; ++i){
+            colors[i].a = 0;
+            colors[i].r = i;
+            colors[i].g = i;
+            colors[i].b = i;
+        }
+        SDL_SetPaletteColors(mPalette, colors, 0, 256);
+        free(colors);
+    }
+    ~GreyscalePalette(){
+        SDL_FreePalette(mPalette);
+    }
+public:
+    static SDL_Palette *getPalette(){
+        return greyPalette.mPalette;
+    }
+};
+
+GreyscalePalette GreyscalePalette::greyPalette;
+
 //for the mo'
 struct WindowData{
+
 		SDL_Window* mWindow = NULL;
 		SDL_Surface* mSurface = NULL;
 		~WindowData();
@@ -115,7 +142,7 @@ void Picture::newPic(int height, int width, int channels, uint8_t value){
 	mWidth = width;
 	mChannels = channels;
 	mTotalBytes = mHeight * mWidth * mChannels;
-	mData = (uint8_t*)realloc(mData,mTotalBytes);//should realloc()
+	mData = (uint8_t*)realloc(mData,mTotalBytes);
 	memset(mData, value, mTotalBytes);
 }
 
@@ -143,7 +170,12 @@ bool Picture::display(){
             returnVal = true;
     }
     SDL_FreeSurface(mWindowData->mSurface);
-    mWindowData->mSurface = SDL_CreateRGBSurfaceFrom(mData, mWidth, mHeight, 24, mWidth*3, 0x0000FF, 0x00FF00, 0xFF0000, 0x000000/*0,0,0,0*/);//this surface could be a local variable and not a member
+    if (mChannels == 3){
+        mWindowData->mSurface = SDL_CreateRGBSurfaceFrom(mData, mWidth, mHeight, 24, mWidth*3, 0x0000FF, 0x00FF00, 0xFF0000, 0x000000);//this surface could be a local variable and not a member
+    } else if (mChannels == 1){
+        mWindowData->mSurface = SDL_CreateRGBSurfaceFrom(mData, mWidth, mHeight, 8, mWidth, 0, 0, 0, 0/*0,0,0,0*/);//it is possible to not make copy every frame
+        SDL_SetSurfacePalette(mWindowData->mSurface, GreyscalePalette::getPalette());
+    }
     int height, width;
     SDL_GetWindowSize(mWindowData->mWindow, &height, &width);
     if (width!=mWidth || height!=mHeight)
