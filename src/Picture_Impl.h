@@ -38,11 +38,13 @@ GreyscalePalette GreyscalePalette::greyPalette;
 
 //for the mo'
 struct WindowData{
-
+        static int mInstances;
 		SDL_Window* mWindow = NULL;
 		SDL_Surface* mSurface = NULL;
 		~WindowData();
 };
+
+int WindowData::mInstances = 0;
 #endif
 
 Picture::Picture(){
@@ -150,18 +152,19 @@ void Picture::newPic(int height, int width, int channels, uint8_t value){
 bool Picture::display(){
     bool returnVal = false;
 	if(mWindowData == NULL){
-		if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){//TODO check if already init
-        	cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << endl;
-        	return true;
-    	}else{
-    		mWindowData = new WindowData();
-        	mWindowData->mWindow = SDL_CreateWindow( "<TEAM 1389>", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, mWidth, mHeight, SDL_WINDOW_SHOWN );
-        	if( mWindowData->mWindow == NULL )
-        	{
-            	cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << endl;
-            	return true;
-        	}
-    	}
+		if (WindowData::mInstances == 0) {
+            if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){//TODO check if already init
+                cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << endl;
+                return true;
+            }
+        }
+        WindowData::mInstances += 1;
+        mWindowData = new WindowData();
+        mWindowData->mWindow = SDL_CreateWindow( "<TEAM 1389>", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, mWidth, mHeight, SDL_WINDOW_SHOWN );
+        if( mWindowData->mWindow == NULL ){
+            cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << endl;
+            return true;
+        }
     }
     //TODO check if size has changed
     SDL_Event event;
@@ -187,11 +190,13 @@ bool Picture::display(){
 }
 
 WindowData::~WindowData(){
-	if (mWindow != NULL)
-		SDL_DestroyWindow(mWindow);//TODO do I also have to free?
 	if (mSurface != NULL)
 		SDL_FreeSurface(mSurface);
-	SDL_Quit();
+    if (mWindow != NULL) //TODO need to only init and quit SDL one time
+		SDL_DestroyWindow(mWindow);//TODO do I also have to free?
+    WindowData::mInstances -= 1;
+    if (WindowData::mInstances == 0)
+        SDL_Quit();
 }
 
 #endif //PICTURE_USE_SDL
